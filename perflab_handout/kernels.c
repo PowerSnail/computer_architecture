@@ -113,9 +113,38 @@ char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst) 
 {
 		int i, j;
-		for (i = 0; i < dim; i += 4)
-				for (j = 0; j < dim; j += 4)
-						rotate_with_ptr(dim, &(src[i * dim + j]), &(dst[RIDX(dim - 1 - j, i, dim)]));
+		for (i = 0; i < dim - 3; i += 4)
+				for (j = 0; j < dim - 3; j += 4)
+				{
+						int d = RIDX(dim - 1 - j, i, dim);
+						int s = RIDX(i, j, dim);
+				
+						dst[d] = src[s];
+						dst[d - dim] = src[s + 1];
+						dst[d - 2 * dim] = src[s + 2];
+						dst[d - 3 * dim] = src[s + 3];
+
+						d++; s += dim;
+						dst[d] = src[s];
+						dst[d - dim] = src[s + 1];
+						dst[d - 2 * dim] = src[s + 2];
+						dst[d - 3 * dim] = src[s + 3];
+
+						d++; s += dim;
+						dst[d] = src[s];
+						dst[d - 1 * dim] = src[s + 1];
+						dst[d - 2 * dim] = src[s + 2];
+						dst[d - 3 * dim] = src[s + 3];
+
+						d++; s += dim;
+						dst[d] = src[s];
+						dst[d - 1 * dim] = src[s + 1];
+						dst[d - 2 * dim] = src[s + 2];
+						dst[d - 3 * dim] = src[s + 3];
+				}
+
+
+
 }
 
 /*********************************************************************
@@ -231,7 +260,142 @@ void naive_smooth(int dim, pixel *src, pixel *dst)
 char smooth_descr[] = "smooth: Current working version";
 void smooth(int dim, pixel *src, pixel *dst) 
 {
-    naive_smooth(dim, src, dst);
+		int i = 0, j = 0;	
+		pixel_sum sum;
+
+		i = 0; j = 0;
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);				
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+		for (j = 1; j < dim - 1; ++j)
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i + 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+		j = dim - 1;
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						accumulate_sum(&sum, src[RIDX(i + 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+
+
+		for (i = 1; i < dim - 1; ++i)
+		{
+				j = 0;
+				{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+				}
+				for (j = 1; j < dim - 1; ++j)
+				{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+				}
+				j = dim - 1;
+				{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i + 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j - 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+				}
+		}
+
+		i = dim - 1; j = 0;
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+		for (j = 1; j < dim - 1; ++j)
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j - 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+		i = dim - 1; j = dim - 1;  
+		{
+						initialize_pixel_sum(&sum);
+						accumulate_sum(&sum, src[RIDX(i - 1, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i - 1, j + 1, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j, dim)]);					
+						accumulate_sum(&sum, src[RIDX(i, j + 1, dim)]);					
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+					  accumulate_sum(&sum, src[RIDX(i, j, dim)]);	
+						assign_sum_to_pixel(&(dst[RIDX(i, j, dim)]), sum);
+		}
+
+
+
 }
 
 
