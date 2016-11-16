@@ -10,10 +10,10 @@
  * Please fill in the following team struct 
  */
 team_t team = {
-    "bovik",              /* Team name */
+    "PowerSnail",              /* Team name */
 
-    "Harry Q. Bovik",     /* First member full name */
-    "bovik@nowhere.edu",  /* First member email address */
+    "Han Jin",     /* First member full name */
+    "hj5fb@virginia.edu",  /* First member email address */
 
     "",                   /* Second member full name (leave blank if none) */
     ""                    /* Second member email addr (leave blank if none) */
@@ -40,13 +40,82 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
 	    dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
 }
 
+char rotate_u2_des[] = "rotate: unroll_2";
+void rotate_u2(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+
+    for (i = 0; i < dim; i++)
+		{
+				for (j = 0; j < dim - 1; j += 2)
+				{
+						dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
+						dst[RIDX(dim-2-j, i, dim)] = src[RIDX(i, j + 1, dim)];
+				}
+		}
+}
+
+
+char rotate_u4_des[] = "rotate: unroll_4";
+void rotate_u4(int dim, pixel *src, pixel *dst)
+{
+    int i, j;
+
+    for (i = 0; i < dim; i++)
+		{
+				for (j = 0; j < dim; j += 4)
+				{
+						dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
+						dst[RIDX(dim-2-j, i, dim)] = src[RIDX(i, j + 1, dim)];
+						dst[RIDX(dim-3-j, i, dim)] = src[RIDX(i, j + 2, dim)];
+						dst[RIDX(dim-4-j, i, dim)] = src[RIDX(i, j + 3, dim)];
+				}
+		}
+}
+
+char rotate_with_ptr_des[] = "rotate: with ptr 4x4";
+inline void rotate_with_ptr(int dim, pixel *src, pixel *dst)
+{
+		*(dst + 3 * dim) = *(src);
+		*(dst + 2 * dim) = *(src + 1);
+		*(dst + 1 * dim) = *(src + 2);
+		*(dst) = *(src + 3);
+
+		src += dim;
+		dst++;
+		*(dst + 3 * dim) = *(src);
+		*(dst + 2 * dim) = *(src + 1);
+		*(dst + 1 * dim) = *(src + 2);
+		*(dst) = *(src + 3);
+
+		src += dim;
+		dst++;
+		*(dst + 3 * dim) = *(src);
+		*(dst + 2 * dim) = *(src + 1);
+		*(dst + 1 * dim) = *(src + 2);
+		*(dst) = *(src + 3);
+
+		src += dim;
+		dst++;
+		*(dst + 3 * dim) = *(src);
+		*(dst + 2 * dim) = *(src + 1);
+		*(dst + 1 * dim) = *(src + 2);
+		*(dst) = *(src + 3);
+}
+
+
+
+
 /* 
  * rotate - Another version of rotate
  */
 char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst) 
 {
-    naive_rotate(dim, src, dst);
+		int i, j;
+		for (i = 0; i < dim; i += 4)
+				for (j = 0; j < dim; j += 4)
+						rotate_with_ptr(dim, &(src[i * dim + j]), &(dst[RIDX(dim - 1 - j, i, dim)]));
 }
 
 /*********************************************************************
@@ -59,7 +128,8 @@ void rotate(int dim, pixel *src, pixel *dst)
 
 void register_rotate_functions() 
 {
-    add_rotate_function(&naive_rotate, naive_rotate_descr);   
+    add_rotate_function(&naive_rotate, naive_rotate_descr);  
+		add_rotate_function(&rotate_u4, rotate_u4_des);	
     add_rotate_function(&rotate, rotate_descr);   
     /* ... Register additional test functions here */
 }
